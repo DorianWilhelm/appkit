@@ -38,7 +38,7 @@ import {
 import { normalize } from 'viem/ens'
 
 import { AppKit, type AppKitOptions, WcHelpersUtil } from '@reown/appkit'
-import type { AppKitNetwork, BaseNetwork, CaipNetwork, ChainNamespace } from '@reown/appkit-common'
+import type { AppKitNetwork, CaipNetwork, ChainNamespace } from '@reown/appkit-common'
 import {
   ConstantsUtil as CommonConstantsUtil,
   NetworkUtil,
@@ -153,7 +153,7 @@ export class WagmiAdapter extends AdapterBlueprint {
     return this.wagmiConfig.connectors.find(c => c.id === id)
   }
 
-  private createConfig(
+  private createConfig<chains extends readonly [Chain, ...Chain[]]>(
     configParams: Partial<CreateConfigParameters> & {
       networks: CaipNetwork[]
       projectId: string
@@ -162,7 +162,7 @@ export class WagmiAdapter extends AdapterBlueprint {
     this.caipNetworks = configParams.networks
     this.wagmiChains = this.caipNetworks.filter(
       caipNetwork => caipNetwork.chainNamespace === CommonConstantsUtil.CHAIN.EVM
-    ) as unknown as [BaseNetwork, ...BaseNetwork[]]
+    ) as unknown as chains
 
     const transportsArr = this.wagmiChains.map(chain => [
       chain.id,
@@ -186,7 +186,7 @@ export class WagmiAdapter extends AdapterBlueprint {
       chains: this.wagmiChains,
       transports,
       connectors
-    })
+    }) as Config<chains>
   }
 
   private setupWatchPendingTransactions() {
